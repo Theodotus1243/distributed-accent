@@ -29,14 +29,35 @@ def stress(texts: List[str]):
     return ambiguous_texts
 
 
+def get_chunk_indices(start: int, end: int):
+    line_indices = np.arange(num_lines)
+    np.random.shuffle(line_indices)
+
+    chunks = np.array_split(line_indices, total_chunks)
+    selected_chunks_list = chunks[start: end]
+    selected_chunks = np.concatenate(selected_chunks_list)
+    return selected_chunks
+
+
+
 if (__name__ == "__main__"):
     filename = "full.txt"
+    start = 0
+    end = 100
 
 
     # check integrity
     assert hash_file(filename) == b'=\x9e\x1f\xec\xa6\x81\xc1\xd84\xbd\x0b?.\x1b\x8ew'
     num_lines = 58070492
+    total_chunks = 1000
+
+
+    # set seed
+    seed = 42
+    np.random.seed(seed)
 
 
     # get chunk of data
+    chunk_indices = get_chunk_indices(start, end)
+
     
