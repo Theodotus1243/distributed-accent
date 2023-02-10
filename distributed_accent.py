@@ -5,6 +5,7 @@ from tqdm import tqdm
 import numpy as np
 
 import hashlib
+import os
 
 
 
@@ -53,6 +54,18 @@ def read_chunks(filename: str, chunk_indices: np.array):
     return chunk_text
 
 
+def write_stressed_text(stressed_text: List[str]):
+    dirname = f"{start}-{end}"
+    os.mkdir(dirname)
+    with open(f"{dirname}/stressed.txt", "w") as stressed, open(f"{dirname}/ambiguous.txt", "w") as ambiguous:
+        for text, ambiguity in stressed_text:
+            if (not ambiguity):
+                stressed.write(text)
+            else:
+                ambiguous.write(text)
+
+
+
 if (__name__ == "__main__"):
     filename = "full.txt"
     num_processes = 2
@@ -86,4 +99,5 @@ if (__name__ == "__main__"):
         assert len(chunk_text) == len(stressed_text)
 
 
-    
+    # write stressed text
+    write_stressed_text(stressed_text)
