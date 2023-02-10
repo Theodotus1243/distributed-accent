@@ -55,9 +55,9 @@ def read_chunks(filename: str, chunk_indices: np.array):
 
 
 def write_stressed_text(stressed_text: List[str]):
-    dirname = f"{start}-{end}"
+    dirname = f"{start}-{end-1}"
     os.mkdir(dirname)
-    with open(f"{dirname}/stressed.txt", "w") as stressed, open(f"{dirname}/ambiguous.txt", "w") as ambiguous:
+    with open(f"{dirname}/stressed_{dirname}.txt", "w") as stressed, open(f"{dirname}/ambiguous_{dirname}.txt", "w") as ambiguous:
         for text, ambiguity in stressed_text:
             if (not ambiguity):
                 stressed.write(text)
