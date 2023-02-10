@@ -1,0 +1,1 @@
+sed 's/́//g' stressed.txt >> original.txt
