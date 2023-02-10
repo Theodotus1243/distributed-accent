@@ -1,5 +1,6 @@
 from typing import List
 from ukrainian_word_stress import Stressifier, StressSymbol, OnAmbiguity
+from tqdm import tqdm
 import numpy as np
 
 import hashlib
@@ -39,6 +40,16 @@ def get_chunk_indices(start: int, end: int):
     return selected_chunks
 
 
+def read_chunks(filename: str, chunk_indices: np.array):
+    chunk_indices_set = set(chunk_indices)
+    with open(filename) as file:
+        print("Reading chunks")
+        chunk_text = [sentence for idx, sentence in tqdm(enumerate(file), total=num_lines) if (idx in chunk_indices_set)]
+        
+    assert len(chunk_text) == len(chunk_indices)
+
+    return chunk_text
+
 
 if (__name__ == "__main__"):
     filename = "full.txt"
@@ -60,4 +71,4 @@ if (__name__ == "__main__"):
     # get chunk of data
     chunk_indices = get_chunk_indices(start, end)
 
-    
+    chunk_text = read_chunks(filename, chunk_indices)
