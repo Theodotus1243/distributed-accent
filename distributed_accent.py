@@ -80,6 +80,10 @@ if (__name__ == "__main__"):
     with Pool(processes=num_processes) as pool:
         chunk_size = 10000
         chunks = [chunk_text[i:i + chunk_size] for i in range(0, len(chunk_text), chunk_size)]
-        stressed_text = pool.map(stress, chunks)
+        stressed_chunks = pool.map(stress, chunks)
+        stressed_text = sum(stressed_chunks, [])
+
+        assert len(chunk_text) == len(stressed_text)
+
 
     
