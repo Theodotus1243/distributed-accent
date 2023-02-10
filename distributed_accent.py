@@ -1,5 +1,6 @@
 from typing import List
 from ukrainian_word_stress import Stressifier, StressSymbol, OnAmbiguity
+from multiprocessing import Pool
 from tqdm import tqdm
 import numpy as np
 
@@ -22,7 +23,8 @@ def stress(texts: List[str]):
     ambiguous_texts = []
     stressify_skip = Stressifier(stress_symbol=StressSymbol.CombiningAcuteAccent, on_ambiguity = OnAmbiguity.Skip)
     stressify_all = Stressifier(stress_symbol=StressSymbol.CombiningAcuteAccent, on_ambiguity = OnAmbiguity.All)
-    for text in texts:
+    print("Processing text")
+    for text in tqdm(texts):
         text_skip = stressify_skip(text)
         text_all = stressify_all(text)
         ambiguity = (text_skip!=text_all)
@@ -53,6 +55,7 @@ def read_chunks(filename: str, chunk_indices: np.array):
 
 if (__name__ == "__main__"):
     filename = "full.txt"
+    num_processes = 2
     start = 0
     end = 100
 
@@ -72,3 +75,11 @@ if (__name__ == "__main__"):
     chunk_indices = get_chunk_indices(start, end)
 
     chunk_text = read_chunks(filename, chunk_indices)
+
+    # process data in Pool
+    with Pool(processes=num_processes) as pool:
+        chunk_size = 10000
+        chunks = [chunk_text[i:i + chunk_size] for i in range(0, len(chunk_text), chunk_size)]
+        stressed_text = pool.map(stress, chunks)
+
+    
