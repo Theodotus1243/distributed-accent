@@ -39,8 +39,9 @@ def get_chunk_indices(start: int, end: int):
 
     chunks = np.array_split(line_indices, total_chunks)
     selected_chunks_list = chunks[start: end]
-    selected_chunks = np.concatenate(selected_chunks_list)
-    return selected_chunks
+    chunks_idx = list(range(start, end))
+    #selected_chunks = np.concatenate(selected_chunks_list)
+    return chunks_idx, selected_chunks_list
 
 
 def read_chunks(filename: str, chunk_indices: np.array):
@@ -54,16 +55,18 @@ def read_chunks(filename: str, chunk_indices: np.array):
     return chunk_text
 
 
-def write_stressed_text(stressed_text: List[str]):
-    dirname = f"{start}-{end-1}"
-    os.mkdir(dirname)
-    with open(f"{dirname}/stressed_{dirname}.txt", "w") as stressed, open(f"{dirname}/ambiguous_{dirname}.txt", "w") as ambiguous:
+def write_stressed_text(stressed_text: List[str], idx: int):
+    with open(f"{stressed_dir}/stressed_{idx}.txt", "w") as stressed, open(f"{ambiguous_dir}/ambiguous_{idx}.txt", "w") as ambiguous:
         for text, ambiguity in stressed_text:
             if (not ambiguity):
                 stressed.write(text)
             else:
                 ambiguous.write(text)
 
+def create_dirs():
+    os.mkdir(dirname)
+    os.mkdir(stressed_dir)
+    os.mkdir(ambiguous_dir)
 
 
 if (__name__ == "__main__"):
@@ -72,6 +75,11 @@ if (__name__ == "__main__"):
     start = 0
     end = 100
 
+    # dataset name
+    dirname = f"{start}-{end-1}"
+    stressed_dir = f"{dirname}/stressed"
+    ambiguous_dir = f"{dirname}/ambiguous"
+    create_dirs()
 
     # check integrity
     assert hash_file(filename) == b'=\x9e\x1f\xec\xa6\x81\xc1\xd84\xbd\x0b?.\x1b\x8ew'
@@ -85,19 +93,22 @@ if (__name__ == "__main__"):
 
 
     # get chunk of data
-    chunk_indices = get_chunk_indices(start, end)
-
-    chunk_text = read_chunks(filename, chunk_indices)
-
-    # process data in Pool
-    with Pool(processes=num_processes) as pool:
-        chunk_size = 10000
-        chunks = [chunk_text[i:i + chunk_size] for i in range(0, len(chunk_text), chunk_size)]
-        stressed_chunks = pool.map(stress, chunks)
-        stressed_text = sum(stressed_chunks, [])
-
-        assert len(chunk_text) == len(stressed_text)
+    chunks_idx, chunk_indices_list = get_chunk_indices(start, end)
 
 
-    # write stressed text
-    write_stressed_text(stressed_text)
+    # loop
+    for idx, chunk_indices in zip(chunks_idx, chunk_indices_list):
+        chunk_text = read_chunks(filename, chunk_indices)
+
+        # process data in Pool
+        with Pool(processes=num_processes) as pool:
+            chunk_size = 10000
+            chunks = [chunk_text[i:i + chunk_size] for i in range(0, len(chunk_text), chunk_size)]
+            stressed_chunks = pool.map(stress, chunks)
+            stressed_text = sum(stressed_chunks, [])
+
+            assert len(chunk_text) == len(stressed_text)
+
+
+        # write stressed text
+        write_stressed_text(stressed_text, idx)
